@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -47,7 +47,7 @@ export default async function ResultPage({
 
   if (!id) notFound()
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: meldung } = await supabase
     .from('wildmeldungen')

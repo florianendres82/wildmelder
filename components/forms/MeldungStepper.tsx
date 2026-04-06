@@ -99,10 +99,12 @@ export default function MeldungStepper() {
       })
       const { revier } = await matchRes.json()
 
-      // 3. Insert wildmeldung
-      const { data: meldung, error: insertError } = await supabase
+      // 3. Insert wildmeldung — pre-generate ID so we don't need SELECT after INSERT
+      const meldungId = crypto.randomUUID()
+      const { error: insertError } = await supabase
         .from('wildmeldungen')
         .insert({
+          id: meldungId,
           latitude: formData.latitude,
           longitude: formData.longitude,
           address: formData.address,
@@ -114,12 +116,10 @@ export default function MeldungStepper() {
           reporter_name: formData.reporterName || null,
           reporter_phone: formData.reporterPhone || null,
         })
-        .select('id')
-        .single()
 
       if (insertError) throw insertError
 
-      router.push(`/melden/result?id=${meldung.id}`)
+      router.push(`/melden/result?id=${meldungId}`)
     } catch (err) {
       console.error(err)
       setError('Fehler beim Speichern der Meldung. Bitte versuchen Sie es erneut.')

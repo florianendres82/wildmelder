@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { MapPin, AlertTriangle, CheckCircle, Clock, Plus } from 'lucide-react'
+import { MapPin, AlertTriangle, CheckCircle, Clock, Plus, ArrowRight } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -159,33 +159,36 @@ export default async function DashboardPage() {
             const statusInfo = STATUS_LABELS[m.status] ?? STATUS_LABELS.gemeldet
             const reviername = reviere?.find((r) => r.id === m.revier_id)?.name
             return (
-              <Card key={m.id} className="border-0 bg-card rounded-2xl">
-                <CardContent className="p-5 flex items-start justify-between gap-4 flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <span className="font-semibold text-foreground">{m.tier_art}</span>
-                      <span className="text-muted-foreground text-sm">—</span>
-                      <span className="text-sm text-muted-foreground">
-                        {m.tier_tot ? 'tot' : 'verletzt'}
-                      </span>
-                      <span
-                        className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${statusInfo.class}`}
-                      >
-                        {statusInfo.label}
-                      </span>
+              <Link key={m.id} href={`/meldungen/${m.id}`} className="block group">
+                <Card className="border-0 bg-card rounded-2xl group-hover:bg-surface-container transition-colors">
+                  <CardContent className="p-5 flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className="font-semibold text-foreground">{m.tier_art}</span>
+                        <span className="text-muted-foreground text-sm">—</span>
+                        <span className="text-sm text-muted-foreground">
+                          {m.tier_tot ? 'tot' : 'verletzt'}
+                        </span>
+                        <span
+                          className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${statusInfo.class}`}
+                        >
+                          {statusInfo.label}
+                        </span>
+                      </div>
+                      {reviername && (
+                        <p className="text-xs text-muted-foreground mb-1">Revier: {reviername}</p>
+                      )}
+                      <p className="text-sm text-muted-foreground truncate">
+                        {m.address || `${m.latitude?.toFixed(4)}, ${m.longitude?.toFixed(4)}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(m.created_at).toLocaleString('de-DE')}
+                      </p>
                     </div>
-                    {reviername && (
-                      <p className="text-xs text-muted-foreground mb-1">Revier: {reviername}</p>
-                    )}
-                    <p className="text-sm text-muted-foreground truncate">
-                      {m.address || `${m.latitude?.toFixed(4)}, ${m.longitude?.toFixed(4)}`}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(m.created_at).toLocaleString('de-DE')}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1 group-hover:text-foreground transition-colors" />
+                  </CardContent>
+                </Card>
+              </Link>
             )
           })}
         </div>

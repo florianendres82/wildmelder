@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { MapPin, Navigation, Search, Loader2 } from 'lucide-react'
+import { MapPin, Navigation, Search, Loader2, Map, Satellite } from 'lucide-react'
 
 // Fix Leaflet icons
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +49,7 @@ export default function LocationPicker({
   const [gpsLoading, setGpsLoading] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
   const [gpsError, setGpsError] = useState('')
+  const [satellite, setSatellite] = useState(false)
   const mapRef = useRef<L.Map | null>(null)
 
   const defaultCenter: [number, number] = position ?? [51.1657, 10.4515] // Germany center
@@ -158,21 +159,40 @@ export default function LocationPicker({
       </form>
 
       {/* Map */}
-      <div className="rounded-xl overflow-hidden border border-border">
+      <div className="rounded-xl overflow-hidden border border-border relative aspect-[3/2] w-full">
         <MapContainer
           center={defaultCenter}
           zoom={position ? 15 : 6}
-          className="h-72 w-full"
+          className="h-full w-full"
           style={{ zIndex: 0 }}
           ref={mapRef}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          {satellite ? (
+            <TileLayer
+              attribution='&copy; <a href="https://www.esri.com">Esri</a>'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+          ) : (
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          )}
           <MapClickHandler onMapClick={updatePosition} />
           {position && <Marker position={position} />}
         </MapContainer>
+        {/* Layer toggle — absolute over the map */}
+        <button
+          type="button"
+          onClick={() => setSatellite((s) => !s)}
+          className="absolute top-2 right-2 z-[1000] flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-foreground text-xs font-medium rounded-lg px-2.5 py-1.5 shadow border border-border hover:bg-white transition-colors"
+        >
+          {satellite ? (
+            <><Map className="w-3.5 h-3.5" /> Karte</>
+          ) : (
+            <><Satellite className="w-3.5 h-3.5" /> Satellit</>
+          )}
+        </button>
       </div>
 
       <p className="text-xs text-muted-foreground flex items-center gap-1">

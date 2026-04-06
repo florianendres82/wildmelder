@@ -13,7 +13,7 @@ import type { GeoJSON } from 'geojson'
 const PolygonEditor = dynamic(() => import('@/components/map/PolygonEditor'), {
   ssr: false,
   loading: () => (
-    <div className="h-96 w-full rounded-xl bg-muted animate-pulse flex items-center justify-center">
+    <div className="h-[600px] w-full rounded-xl bg-muted animate-pulse flex items-center justify-center">
       <Map className="w-8 h-8 text-muted-foreground" />
     </div>
   ),
