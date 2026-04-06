@@ -111,21 +111,19 @@ export default async function Header() {
                     {userData.profile?.display_name ?? userData.user.email}
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
                   {isJaeger && (
-                    <>
-                      <DropdownMenuItem asChild>
-                        <Link href="/dashboard" className="flex items-center gap-2">
-                          <LayoutDashboard className="w-4 h-4" />
-                          Dashboard
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/reviere" className="flex items-center gap-2">
-                          <Map className="w-4 h-4" />
-                          Meine Reviere
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
+                    <DropdownMenuItem asChild>
+                      <Link href="/reviere" className="flex items-center gap-2">
+                        <Map className="w-4 h-4" />
+                        Meine Reviere
+                      </Link>
+                    </DropdownMenuItem>
                   )}
                   {isAdmin && (
                     <DropdownMenuItem asChild>

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import MeldungPDFButton from '@/components/forms/MeldungPDFButton'
 import {
   CheckCircle,
   Phone,
@@ -206,7 +207,19 @@ export default async function ResultPage({
         </CardContent>
       </Card>
 
-      <div className="text-center">
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <MeldungPDFButton data={{
+          id: meldung.id,
+          createdAt: meldung.created_at,
+          address: meldung.address,
+          latitude: meldung.latitude,
+          longitude: meldung.longitude,
+          tierArt: meldung.tier_art,
+          tierTot: meldung.tier_tot,
+          reviername: revier?.name ?? null,
+          jaegerName: revier?.profiles?.display_name ?? null,
+          jaegerPhone: revier?.phone_numbers?.[0] ?? null,
+        }} />
         <Button asChild variant="outline" className="h-12 px-8">
           <Link href="/">Zurück zur Startseite</Link>
         </Button>

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, MapPin, Phone, User, FileText, Calendar } from 'lucide-react'
 import MeldungActions from '@/components/forms/MeldungActions'
+import MeldungPDFButton from '@/components/forms/MeldungPDFButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -181,11 +182,28 @@ export default async function MeldungDetailPage({
 
         {/* Actions */}
         <Card className="border-0 bg-card rounded-2xl">
-          <CardContent className="p-5">
+          <CardContent className="p-5 space-y-4">
             <MeldungActions
               meldungId={meldung.id}
               currentStatus={meldung.status as 'gemeldet' | 'in_bearbeitung' | 'abgeschlossen'}
             />
+            <div className="pt-2 border-t border-border">
+              <MeldungPDFButton data={{
+                id: meldung.id,
+                createdAt: meldung.created_at,
+                address: meldung.address,
+                latitude: meldung.latitude,
+                longitude: meldung.longitude,
+                tierArt: meldung.tier_art,
+                tierTot: meldung.tier_tot,
+                notes: meldung.notes,
+                reporterName: meldung.reporter_name,
+                reporterPhone: meldung.reporter_phone,
+                reviername: revier?.name ?? null,
+                jaegerName: revier?.profiles?.display_name ?? null,
+                jaegerPhone: revier?.phone_numbers?.[0] ?? null,
+              }} />
+            </div>
           </CardContent>
         </Card>
       </div>
