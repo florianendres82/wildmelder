@@ -47,14 +47,14 @@ export default async function MeldungDetailPage({
   // Fetch the meldung — RLS ensures only reports in the Jäger's reviere are visible
   const { data: meldung } = await supabase
     .from('wildmeldungen')
-    .select('*, reviere(name, jaeger_id)')
+    .select('*, reviere(name, jaeger_id, phone_numbers, profiles(display_name))')
     .eq('id', id)
     .single()
 
   if (!meldung) notFound()
 
   // Confirm the Jäger owns this revier (belt-and-suspenders)
-  const revier = meldung.reviere as { name: string; jaeger_id: string } | null
+  const revier = meldung.reviere as { name: string; jaeger_id: string; phone_numbers: string[]; profiles: { display_name: string } | null } | null
   if (revier?.jaeger_id !== user.id) notFound()
 
   const statusInfo = STATUS_LABELS[meldung.status] ?? STATUS_LABELS.gemeldet
