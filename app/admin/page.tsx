@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, Map, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Users, Map, AlertTriangle, CheckCircle, List } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,8 +35,8 @@ export default async function AdminPage() {
         {[
           { label: 'Benutzer', value: userCount ?? 0, icon: Users, href: '/admin/benutzer' },
           { label: 'Reviere', value: revierCount ?? 0, icon: Map, href: '/admin/reviere' },
-          { label: 'Meldungen', value: meldungCount ?? 0, icon: AlertTriangle, href: '#' },
-          { label: 'Offen', value: openCount ?? 0, icon: CheckCircle, href: '#' },
+          { label: 'Meldungen', value: meldungCount ?? 0, icon: AlertTriangle, href: '/admin/meldungen' },
+          { label: 'Offen', value: openCount ?? 0, icon: CheckCircle, href: '/admin/meldungen?tage=30' },
         ].map(({ label, value, icon: Icon, href }) => (
           <Link key={label} href={href}>
             <Card className="border-0 bg-surface-container rounded-2xl hover:bg-surface-container-high transition-colors">
@@ -51,7 +51,7 @@ export default async function AdminPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link href="/admin/benutzer">
           <Card className="border-0 bg-card rounded-2xl hover:bg-surface-container transition-colors">
             <CardContent className="p-6 flex items-center gap-4">
@@ -74,6 +74,19 @@ export default async function AdminPage() {
               <div>
                 <h2 className="font-semibold text-foreground">Revierverwaltung</h2>
                 <p className="text-sm text-muted-foreground">Alle eingetragenen Reviere</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/meldungen">
+          <Card className="border-0 bg-card rounded-2xl hover:bg-surface-container transition-colors">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <List className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-foreground">Meldungsübersicht</h2>
+                <p className="text-sm text-muted-foreground">Heatmap, Filter, Auswertung</p>
               </div>
             </CardContent>
           </Card>
