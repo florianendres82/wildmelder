@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { TreePine, Menu, AlertTriangle } from 'lucide-react'
+import { TreePine, AlertTriangle } from 'lucide-react'
 import UserMenuClient from './UserMenuClient'
+import MobileMenuClient from './MobileMenuClient'
 
 async function getRole(): Promise<string | null> {
   try {
@@ -85,45 +85,7 @@ export default async function Header() {
             <UserMenuClient />
 
             {/* Mobile Menu */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="w-5 h-5" />
-                  <span className="sr-only">Menü öffnen</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-72">
-                <nav className="flex flex-col gap-4 mt-8">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="text-base font-medium text-foreground hover:text-primary transition-colors py-2 border-b border-border"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                  {isJaeger && (
-                    <>
-                      <Link href="/dashboard" className="text-base font-medium text-foreground hover:text-primary transition-colors py-2 border-b border-border">
-                        Dashboard
-                      </Link>
-                      <Link href="/reviere" className="text-base font-medium text-foreground hover:text-primary transition-colors py-2 border-b border-border">
-                        Meine Reviere
-                      </Link>
-                    </>
-                  )}
-                  {isAdmin && (
-                    <Link href="/admin" className="text-base font-medium text-foreground hover:text-primary transition-colors py-2 border-b border-border">
-                      Admin-Panel
-                    </Link>
-                  )}
-                  <Link href="/logout" className="text-base font-medium text-destructive hover:text-destructive/80 transition-colors py-2">
-                    Abmelden
-                  </Link>
-                </nav>
-              </SheetContent>
-            </Sheet>
+            <MobileMenuClient isJaeger={isJaeger} isAdmin={isAdmin} isLoggedIn={!!role} />
           </div>
         </div>
       </div>
