@@ -2,11 +2,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, MapPin, Phone, User, FileText, Calendar } from 'lucide-react'
 import MeldungActions from '@/components/forms/MeldungActions'
 import MeldungPDFButton from '@/components/forms/MeldungPDFButton'
+import CopyIdButton from '@/components/ui/CopyIdButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,8 +46,18 @@ export default async function MeldungDetailPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch the meldung — RLS ensures only reports in the Jäger's reviere are visible
-  const { data: meldung } = await supabase
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const isAdmin = profile?.role === 'admin'
+
+  // Admins use service-role client (bypasses RLS), Jäger use session client
+  const db = isAdmin ? createAdminClient() : supabase
+
+  const { data: meldung } = await db
     .from('wildmeldungen')
     .select('*, reviere(name, jaeger_id, phone_numbers, profiles(display_name))')
     .eq('id', id)
@@ -53,9 +65,10 @@ export default async function MeldungDetailPage({
 
   if (!meldung) notFound()
 
-  // Confirm the Jäger owns this revier (belt-and-suspenders)
   const revier = meldung.reviere as { name: string; jaeger_id: string; phone_numbers: string[]; profiles: { display_name: string } | null } | null
-  if (revier?.jaeger_id !== user.id) notFound()
+
+  // Jäger can only see reports in their own reviere
+  if (!isAdmin && revier?.jaeger_id !== user.id) notFound()
 
   const statusInfo = STATUS_LABELS[meldung.status] ?? STATUS_LABELS.gemeldet
   const mapsUrl = `https://www.google.com/maps?q=${meldung.latitude},${meldung.longitude}`
@@ -64,13 +77,16 @@ export default async function MeldungDetailPage({
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       <div className="mb-6">
         <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
-          <Link href="/dashboard">
+          <Link href={isAdmin ? '/admin/meldungen' : '/dashboard'}>
             <ArrowLeft className="w-4 h-4 mr-1.5" />
-            Zurück zum Dashboard
+            {isAdmin ? 'Zurück zur Übersicht' : 'Zurück zum Dashboard'}
           </Link>
         </Button>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
+            <div className="flex items-center gap-2 mb-1">
+              <CopyIdButton id={meldung.id} />
+            </div>
             <h1 className="font-heading text-2xl font-bold text-foreground">
               {TIER_LABELS[meldung.tier_art] ?? meldung.tier_art}
               {' '}

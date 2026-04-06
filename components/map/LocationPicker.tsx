@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import ZoomDisplay from './ZoomDisplay'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { Button } from '@/components/ui/button'
@@ -180,6 +181,7 @@ export default function LocationPicker({
           )}
           <MapClickHandler onMapClick={updatePosition} />
           {position && <Marker position={position} />}
+          <ZoomDisplay />
         </MapContainer>
         {/* Layer toggle — absolute over the map */}
         <button

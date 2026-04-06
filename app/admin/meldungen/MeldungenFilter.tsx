@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useState, useEffect } from 'react'
+import { Search, X } from 'lucide-react'
 
 const TIERARTEN = ['Reh', 'Wildschwein', 'Fuchs', 'Hase', 'Dachs', 'Hirsch', 'Vogel', 'Sonstiges']
 
@@ -21,6 +22,12 @@ export default function MeldungenFilter() {
 
   const tierArt = searchParams.get('tier') ?? ''
   const zeitraum = searchParams.get('tage') ?? ''
+  const q = searchParams.get('q') ?? ''
+
+  const [searchInput, setSearchInput] = useState(q)
+
+  // Sync input when URL changes externally
+  useEffect(() => { setSearchInput(q) }, [q])
 
   const update = useCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -29,8 +36,36 @@ export default function MeldungenFilter() {
     router.replace(`${pathname}?${params.toString()}`)
   }, [router, pathname, searchParams])
 
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    update('q', searchInput.trim())
+  }
+
+  const hasFilters = tierArt || zeitraum || q
+
   return (
     <div className="flex flex-wrap gap-3 items-center">
+      {/* Search */}
+      <form onSubmit={handleSearchSubmit} className="relative flex-1 min-w-48 max-w-sm">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <input
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Suche nach ID, Ort, Tierart…"
+          className="h-9 w-full rounded-lg border border-input bg-background pl-8 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {searchInput && (
+          <button
+            type="button"
+            onClick={() => { setSearchInput(''); update('q', '') }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </form>
+
       {/* Wildart */}
       <select
         value={tierArt}
@@ -54,12 +89,12 @@ export default function MeldungenFilter() {
         ))}
       </select>
 
-      {(tierArt || zeitraum) && (
+      {hasFilters && (
         <button
-          onClick={() => { update('tier', ''); update('tage', '') }}
+          onClick={() => { update('tier', ''); update('tage', ''); update('q', ''); setSearchInput('') }}
           className="h-9 px-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Filter zurücksetzen
+          Zurücksetzen
         </button>
       )}
     </div>

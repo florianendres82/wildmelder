@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MapPin, AlertTriangle, CheckCircle, Clock, Plus, ArrowRight } from 'lucide-react'
+import DashboardSearch from '@/components/forms/DashboardSearch'
+import CopyIdButton from '@/components/ui/CopyIdButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +21,12 @@ const STATUS_LABELS: Record<string, { label: string; class: string }> = {
   abgeschlossen: { label: 'Abgeschlossen', class: 'bg-primary/20 text-primary' },
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams
   const supabase = await createClient()
 
   const {
@@ -27,7 +35,6 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  // Ensure profile exists (in case the DB trigger didn't fire for this user)
   await supabase
     .from('profiles')
     .upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
@@ -48,7 +55,6 @@ export default async function DashboardPage() {
     )
   }
 
-  // Fetch user's reviere
   const { data: reviere } = await supabase
     .from('reviere')
     .select('id, name')
@@ -56,17 +62,28 @@ export default async function DashboardPage() {
 
   const revierIds = reviere?.map((r) => r.id) ?? []
 
-  // Fetch wildmeldungen in user's reviere
-  const { data: meldungen } = await supabase
+  const { data: allMeldungen } = await supabase
     .from('wildmeldungen')
     .select('id, tier_art, tier_tot, address, latitude, longitude, status, created_at, revier_id')
     .in('revier_id', revierIds.length > 0 ? revierIds : ['none'])
     .order('created_at', { ascending: false })
-    .limit(20)
+    .limit(200)
 
-  const total = meldungen?.length ?? 0
-  const open = meldungen?.filter((m) => m.status === 'gemeldet').length ?? 0
-  const thisMonth = meldungen?.filter((m) => {
+  // Apply search filter
+  const meldungen = q
+    ? allMeldungen?.filter((m) => {
+        const term = q.toLowerCase()
+        return (
+          m.id.toLowerCase().startsWith(term) ||
+          m.tier_art?.toLowerCase().includes(term) ||
+          m.address?.toLowerCase().includes(term)
+        )
+      })
+    : allMeldungen
+
+  const total = allMeldungen?.length ?? 0
+  const open = allMeldungen?.filter((m) => m.status === 'gemeldet').length ?? 0
+  const thisMonth = allMeldungen?.filter((m) => {
     const d = new Date(m.created_at)
     const now = new Date()
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
@@ -134,19 +151,27 @@ export default async function DashboardPage() {
       )}
 
       {/* Reports list */}
-      <h2 className="font-heading font-semibold text-lg text-foreground mb-4">
-        Aktuelle Meldungen
-      </h2>
+      <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+        <h2 className="font-heading font-semibold text-lg text-foreground">
+          Aktuelle Meldungen{q && meldungen ? ` (${meldungen.length} Treffer)` : ''}
+        </h2>
+        <Suspense>
+          <DashboardSearch />
+        </Suspense>
+      </div>
+
       {!meldungen || meldungen.length === 0 ? (
         <Card className="border-0 bg-surface-container rounded-2xl">
           <CardContent className="p-10 text-center">
             <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground">
-              {revierIds.length === 0
+              {q
+                ? `Keine Meldungen für „${q}" gefunden.`
+                : revierIds.length === 0
                 ? 'Sie haben noch keine Reviere eingezeichnet.'
                 : 'Noch keine Meldungen in Ihren Revieren.'}
             </p>
-            {revierIds.length === 0 && (
+            {revierIds.length === 0 && !q && (
               <Button asChild className="mt-4" size="sm">
                 <Link href="/reviere/neu">Erstes Revier einzeichnen</Link>
               </Button>
@@ -164,14 +189,17 @@ export default async function DashboardPage() {
                   <CardContent className="p-5 flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <span className="font-semibold text-foreground">{m.tier_art}</span>
-                        <span className="text-muted-foreground text-sm">—</span>
-                        <span className="text-sm text-muted-foreground">
-                          {m.tier_tot ? 'tot' : 'verletzt'}
-                        </span>
-                        <span
-                          className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${statusInfo.class}`}
-                        >
+                        <CopyIdButton id={m.id} />
+                        <span className="font-semibold text-foreground">{m.tier_art ?? '—'}</span>
+                        {m.tier_tot !== null && (
+                          <>
+                            <span className="text-muted-foreground text-sm">—</span>
+                            <span className="text-sm text-muted-foreground">
+                              {m.tier_tot ? 'tot' : 'verletzt'}
+                            </span>
+                          </>
+                        )}
+                        <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${statusInfo.class}`}>
                           {statusInfo.label}
                         </span>
                       </div>

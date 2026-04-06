@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import ZoomDisplay from './ZoomDisplay'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import 'leaflet-draw'
@@ -259,6 +260,7 @@ export default function PolygonEditor({ onPolygonChange, initialPolygon, onHasPo
             initialPolygon={initialPolygon}
             onHasPolygon={onHasPolygon ?? (() => {})}
           />
+          <ZoomDisplay />
         </MapContainer>
       </div>
       <p className="text-xs text-muted-foreground">

@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent } from '@/components/ui/card'
-import { AlertTriangle, CheckCircle, Clock } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clock, ArrowRight } from 'lucide-react'
 import MeldungenFilter from './MeldungenFilter'
 import MeldungHeatmapClient from '@/components/map/MeldungHeatmapClient'
+import CopyIdButton from '@/components/ui/CopyIdButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,9 +25,9 @@ const STATUS_LABELS: Record<string, { label: string; class: string }> = {
 export default async function AdminMeldungenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tier?: string; tage?: string }>
+  searchParams: Promise<{ tier?: string; tage?: string; q?: string }>
 }) {
-  const { tier, tage } = await searchParams
+  const { tier, tage, q } = await searchParams
 
   // Auth check
   const supabase = await createClient()
@@ -48,7 +50,19 @@ export default async function AdminMeldungenPage({
     query = query.gte('created_at', since.toISOString())
   }
 
-  const { data: meldungen } = await query
+  const { data: allMeldungen } = await query
+
+  // Client-side search filter (ID prefix, address, tier_art, reporter_name)
+  const meldungen = q
+    ? allMeldungen?.filter((m) => {
+        const term = q.toLowerCase()
+        return (
+          m.id.toLowerCase().startsWith(term) ||
+          m.tier_art?.toLowerCase().includes(term) ||
+          m.address?.toLowerCase().includes(term)
+        )
+      })
+    : allMeldungen
 
   const total = meldungen?.length ?? 0
   const open = meldungen?.filter((m) => m.status === 'gemeldet').length ?? 0
@@ -155,10 +169,12 @@ export default async function AdminMeldungenPage({
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const reviername = (m.reviere as any)?.name as string | undefined
               return (
-                <Card key={m.id} className="border-0 bg-card rounded-2xl">
+                <Link key={m.id} href={`/meldungen/${m.id}`} className="block group">
+                <Card className="border-0 bg-card rounded-2xl group-hover:bg-surface-container transition-colors">
                   <CardContent className="p-4 flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <CopyIdButton id={m.id} />
                         <span className="font-semibold text-foreground text-sm">
                           {m.tier_art ?? '—'}
                         </span>
@@ -181,11 +197,15 @@ export default async function AdminMeldungenPage({
                         {m.address || (m.latitude && m.longitude ? `${(m.latitude as number).toFixed(4)}, ${(m.longitude as number).toFixed(4)}` : 'Kein Standort')}
                       </p>
                     </div>
-                    <p className="text-xs text-muted-foreground shrink-0">
-                      {new Date(m.created_at).toLocaleString('de-DE')}
-                    </p>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(m.created_at).toLocaleString('de-DE')}
+                      </p>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    </div>
                   </CardContent>
                 </Card>
+              </Link>
               )
             })}
           </div>

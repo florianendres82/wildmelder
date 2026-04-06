@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import ZoomDisplay from './ZoomDisplay'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
@@ -119,6 +120,7 @@ export default function MeldungHeatmap({ points }: { points: HeatPoint[] }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <ClusterAndHeatLayer points={points} />
+        <ZoomDisplay />
       </MapContainer>
       <div className="px-4 py-2 bg-surface-container text-xs text-muted-foreground flex items-center gap-2">
         <span>Kreise = Cluster (niedriger Zoom) · Heatmap ab Zoomstufe {HEATMAP_ZOOM_THRESHOLD}</span>

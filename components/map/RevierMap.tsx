@@ -1,6 +1,7 @@
 'use client'
 
 import { MapContainer, TileLayer, Polygon, Tooltip } from 'react-leaflet'
+import ZoomDisplay from './ZoomDisplay'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import type { GeoJSON } from 'geojson'
@@ -67,6 +68,7 @@ export default function RevierMap({ reviere, className = 'h-48 w-full rounded-xl
           {revier.name && <Tooltip sticky>{revier.name}</Tooltip>}
         </Polygon>
       ))}
+      <ZoomDisplay />
     </MapContainer>
   )
 }
