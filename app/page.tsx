@@ -4,8 +4,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import {
   AlertTriangle,
   MapPin,
-  Rabbit,
   Phone,
+  FileText,
   BookOpen,
   Map,
   Shield,
@@ -78,19 +78,19 @@ export default function HomePage() {
                 step: '1',
                 icon: MapPin,
                 title: 'Standort bestimmen',
-                desc: 'GPS automatisch oder manuell auf der Karte — präzise Ortsbestimmung für die schnelle Weitergabe.',
+                desc: 'GPS-Standort per Knopfdruck oder manuell auf der Karte setzen — in Sekunden erledigt.',
               },
               {
                 step: '2',
-                icon: Rabbit,
-                title: 'Tier auswählen',
-                desc: 'Art des Tieres kurz angeben, optional Fotos für die Versicherung aufnehmen.',
+                icon: Phone,
+                title: 'Jäger sofort ermittelt',
+                desc: 'Der zuständige Jäger für genau dieses Revier wird automatisch gefunden und seine Nummer direkt angezeigt.',
               },
               {
                 step: '3',
-                icon: Phone,
-                title: 'Jäger wird gefunden',
-                desc: 'Der zuständige Jäger für das Revier wird automatisch ermittelt und angezeigt — inkl. Direktanruf.',
+                icon: FileText,
+                title: 'Optional dokumentieren',
+                desc: 'Tierart, Fotos und Notizen für die Versicherung ergänzen — oder einfach überspringen.',
               },
             ].map(({ step, icon: Icon, title, desc }) => (
               <Card key={step} className="border-0 bg-surface-container rounded-2xl">
