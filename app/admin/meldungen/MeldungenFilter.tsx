@@ -109,7 +109,10 @@ export default function MeldungenFilter() {
 
       {hasFilters && (
         <button
-          onClick={() => { update('tier', ''); update('tage', ''); update('meldungsart', ''); update('q', ''); setSearchInput('') }}
+          onClick={() => {
+            setSearchInput('')
+            router.replace(pathname)
+          }}
           className="h-9 px-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Zurücksetzen
