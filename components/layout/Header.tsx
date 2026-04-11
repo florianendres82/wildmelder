@@ -74,7 +74,7 @@ export default async function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            <Button asChild size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold h-10 px-4 shrink-0">
+            <Button asChild size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground hover:text-white transition-colors font-semibold h-10 px-4 shrink-0">
               <Link href="/melden">
                 <AlertTriangle className="w-4 h-4 mr-1.5" />
                 Wildunfall melden

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Loader2, Trash2, CheckCircle, Clock, AlertTriangle } from 'lucide-react'
+import { Loader2, Trash2, CheckCircle, Clock, AlertTriangle, Car, Leaf } from 'lucide-react'
 
 const STATUSES = [
   { value: 'gemeldet', label: 'Gemeldet', icon: AlertTriangle, class: 'bg-secondary/20 text-secondary border-secondary/30' },
@@ -12,18 +12,28 @@ const STATUSES = [
   { value: 'abgeschlossen', label: 'Abgeschlossen', icon: CheckCircle, class: 'bg-primary/20 text-primary border-primary/30' },
 ] as const
 
+const MELDUNGSARTEN = [
+  { value: 'unfallwild', label: 'Unfallwild', icon: Car, class: 'bg-secondary/20 text-secondary border-secondary/30' },
+  { value: 'fallwild', label: 'Fallwild', icon: Leaf, class: 'bg-primary/20 text-primary border-primary/30' },
+] as const
+
 type Status = (typeof STATUSES)[number]['value']
+type Meldungsart = (typeof MELDUNGSARTEN)[number]['value']
 
 export default function MeldungActions({
   meldungId,
   currentStatus,
+  currentMeldungsart = 'unfallwild',
 }: {
   meldungId: string
   currentStatus: Status
+  currentMeldungsart?: Meldungsart
 }) {
   const router = useRouter()
   const [status, setStatus] = useState<Status>(currentStatus)
+  const [meldungsart, setMeldungsart] = useState<Meldungsart>(currentMeldungsart)
   const [loadingStatus, setLoadingStatus] = useState<Status | null>(null)
+  const [loadingMeldungsart, setLoadingMeldungsart] = useState<Meldungsart | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [error, setError] = useState('')
@@ -44,6 +54,24 @@ export default function MeldungActions({
       router.refresh()
     }
     setLoadingStatus(null)
+  }
+
+  async function updateMeldungsart(next: Meldungsart) {
+    if (next === meldungsart) return
+    setLoadingMeldungsart(next)
+    setError('')
+    const supabase = createClient()
+    const { error: err } = await supabase
+      .from('wildmeldungen')
+      .update({ meldungsart: next })
+      .eq('id', meldungId)
+    if (err) {
+      setError(err.message)
+    } else {
+      setMeldungsart(next)
+      router.refresh()
+    }
+    setLoadingMeldungsart(null)
   }
 
   async function handleDelete() {
@@ -70,6 +98,36 @@ export default function MeldungActions({
 
   return (
     <div className="space-y-4">
+      {/* Meldungsart */}
+      <div>
+        <p className="text-sm font-semibold text-foreground mb-2">Meldungsart</p>
+        <div className="flex flex-wrap gap-2">
+          {MELDUNGSARTEN.map(({ value, label, icon: Icon, class: cls }) => {
+            const isActive = meldungsart === value
+            const isLoading = loadingMeldungsart === value
+            return (
+              <button
+                key={value}
+                onClick={() => updateMeldungsart(value)}
+                disabled={loadingMeldungsart !== null}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                  isActive
+                    ? `${cls} ring-2 ring-offset-1 ring-current`
+                    : 'bg-muted text-muted-foreground border-transparent hover:bg-muted/80'
+                } disabled:opacity-60 disabled:cursor-not-allowed`}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Icon className="w-3.5 h-3.5" />
+                )}
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Status buttons */}
       <div>
         <p className="text-sm font-semibold text-foreground mb-2">Status</p>

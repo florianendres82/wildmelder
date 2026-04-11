@@ -40,7 +40,7 @@ export default function HomePage() {
               <Button
                 asChild
                 size="lg"
-                className="h-14 px-8 text-base font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="h-14 px-8 text-base font-semibold bg-accent hover:bg-accent/90 text-accent-foreground hover:text-white transition-colors"
               >
                 <Link href="/melden">
                   <AlertTriangle className="w-5 h-5 mr-2" />
@@ -51,7 +51,7 @@ export default function HomePage() {
                 asChild
                 variant="outline"
                 size="lg"
-                className="h-14 px-8 text-base font-semibold border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+                className="h-14 px-8 text-base font-semibold bg-primary-foreground text-primary border-transparent hover:bg-primary-foreground/90 hover:text-accent transition-colors"
               >
                 <Link href="/sofortanleitung">
                   <BookOpen className="w-5 h-5 mr-2" />

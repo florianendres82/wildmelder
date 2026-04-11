@@ -6,6 +6,12 @@ import { Search, X } from 'lucide-react'
 
 const TIERARTEN = ['Reh', 'Wildschwein', 'Fuchs', 'Hase', 'Dachs', 'Hirsch', 'Vogel', 'Sonstiges']
 
+const MELDUNGSARTEN = [
+  { value: '', label: 'Alle Meldungsarten' },
+  { value: 'unfallwild', label: 'Unfallwild' },
+  { value: 'fallwild', label: 'Fallwild' },
+]
+
 const ZEITRAEUME = [
   { value: '', label: 'Alle Zeiträume' },
   { value: '1', label: 'Heute' },
@@ -22,6 +28,7 @@ export default function MeldungenFilter() {
 
   const tierArt = searchParams.get('tier') ?? ''
   const zeitraum = searchParams.get('tage') ?? ''
+  const meldungsart = searchParams.get('meldungsart') ?? ''
   const q = searchParams.get('q') ?? ''
 
   const [searchInput, setSearchInput] = useState(q)
@@ -41,7 +48,7 @@ export default function MeldungenFilter() {
     update('q', searchInput.trim())
   }
 
-  const hasFilters = tierArt || zeitraum || q
+  const hasFilters = tierArt || zeitraum || meldungsart || q
 
   return (
     <div className="flex flex-wrap gap-3 items-center">
@@ -65,6 +72,17 @@ export default function MeldungenFilter() {
           </button>
         )}
       </form>
+
+      {/* Meldungsart */}
+      <select
+        value={meldungsart}
+        onChange={(e) => update('meldungsart', e.target.value)}
+        className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        {MELDUNGSARTEN.map((v) => (
+          <option key={v.value} value={v.value}>{v.label}</option>
+        ))}
+      </select>
 
       {/* Wildart */}
       <select
@@ -91,7 +109,7 @@ export default function MeldungenFilter() {
 
       {hasFilters && (
         <button
-          onClick={() => { update('tier', ''); update('tage', ''); update('q', ''); setSearchInput('') }}
+          onClick={() => { update('tier', ''); update('tage', ''); update('meldungsart', ''); update('q', ''); setSearchInput('') }}
           className="h-9 px-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Zurücksetzen

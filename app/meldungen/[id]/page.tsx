@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   title: 'Meldung | Wildmelder',
 }
 
+const MELDUNGSART_LABELS: Record<string, { label: string; class: string }> = {
+  unfallwild: { label: 'Unfallwild', class: 'bg-secondary/20 text-secondary' },
+  fallwild: { label: 'Fallwild', class: 'bg-primary/20 text-primary' },
+}
+
 const STATUS_LABELS: Record<string, { label: string; class: string }> = {
   gemeldet: { label: 'Gemeldet', class: 'bg-secondary/20 text-secondary' },
   in_bearbeitung: { label: 'In Bearbeitung', class: 'bg-accent/20 text-accent' },
@@ -71,6 +76,7 @@ export default async function MeldungDetailPage({
   if (!isAdmin && revier?.jaeger_id !== user.id) notFound()
 
   const statusInfo = STATUS_LABELS[meldung.status] ?? STATUS_LABELS.gemeldet
+  const meldungsartInfo = MELDUNGSART_LABELS[meldung.meldungsart ?? 'unfallwild']
   const mapsUrl = `https://www.google.com/maps?q=${meldung.latitude},${meldung.longitude}`
 
   return (
@@ -98,9 +104,14 @@ export default async function MeldungDetailPage({
               <p className="text-sm text-muted-foreground mt-0.5">Revier: {revier.name}</p>
             )}
           </div>
-          <span className={`text-xs font-medium rounded-full px-3 py-1 shrink-0 ${statusInfo.class}`}>
-            {statusInfo.label}
-          </span>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <span className={`text-xs font-medium rounded-full px-3 py-1 ${meldungsartInfo.class}`}>
+              {meldungsartInfo.label}
+            </span>
+            <span className={`text-xs font-medium rounded-full px-3 py-1 ${statusInfo.class}`}>
+              {statusInfo.label}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -202,6 +213,7 @@ export default async function MeldungDetailPage({
             <MeldungActions
               meldungId={meldung.id}
               currentStatus={meldung.status as 'gemeldet' | 'in_bearbeitung' | 'abgeschlossen'}
+              currentMeldungsart={(meldung.meldungsart ?? 'unfallwild') as 'unfallwild' | 'fallwild'}
             />
             <div className="pt-2 border-t border-border">
               <MeldungPDFButton data={{

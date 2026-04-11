@@ -126,6 +126,7 @@ export default function MeldungStepper() {
         photo_urls: photoUrls,
         reporter_name: skipDoku ? null : (formData.reporterName || null),
         reporter_phone: skipDoku ? null : (formData.reporterPhone || null),
+        meldungsart: 'unfallwild',
       })
 
       if (insertError) throw insertError

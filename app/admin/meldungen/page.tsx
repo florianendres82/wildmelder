@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   title: 'Meldungsübersicht | Admin | Wildmelder',
 }
 
+const MELDUNGSART_LABELS: Record<string, { label: string; class: string }> = {
+  unfallwild: { label: 'Unfallwild', class: 'bg-secondary/20 text-secondary' },
+  fallwild: { label: 'Fallwild', class: 'bg-primary/20 text-primary' },
+}
+
 const STATUS_LABELS: Record<string, { label: string; class: string }> = {
   gemeldet: { label: 'Gemeldet', class: 'bg-secondary/20 text-secondary' },
   in_bearbeitung: { label: 'In Bearbeitung', class: 'bg-accent/20 text-accent' },
@@ -25,9 +30,9 @@ const STATUS_LABELS: Record<string, { label: string; class: string }> = {
 export default async function AdminMeldungenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tier?: string; tage?: string; q?: string }>
+  searchParams: Promise<{ tier?: string; tage?: string; q?: string; meldungsart?: string }>
 }) {
-  const { tier, tage, q } = await searchParams
+  const { tier, tage, q, meldungsart } = await searchParams
 
   // Auth check
   const supabase = await createClient()
@@ -40,10 +45,11 @@ export default async function AdminMeldungenPage({
   const admin = createAdminClient()
   let query = admin
     .from('wildmeldungen')
-    .select('id, tier_art, tier_tot, address, latitude, longitude, status, created_at, revier_id, reviere(name)')
+    .select('id, tier_art, tier_tot, address, latitude, longitude, status, meldungsart, created_at, revier_id, reviere(name)')
     .order('created_at', { ascending: false })
 
   if (tier) query = query.eq('tier_art', tier)
+  if (meldungsart) query = query.eq('meldungsart', meldungsart)
   if (tage) {
     const since = new Date()
     since.setDate(since.getDate() - parseInt(tage))
@@ -166,6 +172,7 @@ export default async function AdminMeldungenPage({
           <div className="space-y-2">
             {meldungen.map((m) => {
               const statusInfo = STATUS_LABELS[m.status] ?? STATUS_LABELS.gemeldet
+              const meldungsartInfo = MELDUNGSART_LABELS[(m as any).meldungsart ?? 'unfallwild']
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const reviername = (m.reviere as any)?.name as string | undefined
               return (
@@ -186,6 +193,9 @@ export default async function AdminMeldungenPage({
                             </span>
                           </>
                         )}
+                        <span className={`text-xs font-medium rounded-full px-2 py-0.5 ${meldungsartInfo.class}`}>
+                          {meldungsartInfo.label}
+                        </span>
                         <span className={`text-xs font-medium rounded-full px-2 py-0.5 ${statusInfo.class}`}>
                           {statusInfo.label}
                         </span>

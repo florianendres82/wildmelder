@@ -160,7 +160,7 @@ export default function LocationPicker({
       </form>
 
       {/* Map */}
-      <div className="rounded-xl overflow-hidden border border-border relative aspect-[3/2] w-full">
+      <div className="rounded-xl overflow-hidden border border-border relative aspect-[3/2] w-full [&_.leaflet-container]:cursor-crosshair">
         <MapContainer
           center={defaultCenter}
           zoom={position ? 15 : 6}

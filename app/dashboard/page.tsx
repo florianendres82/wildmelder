@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   title: 'Dashboard | Wildmelder',
 }
 
+const MELDUNGSART_LABELS: Record<string, { label: string; class: string }> = {
+  unfallwild: { label: 'Unfallwild', class: 'bg-secondary/20 text-secondary' },
+  fallwild: { label: 'Fallwild', class: 'bg-primary/20 text-primary' },
+}
+
 const STATUS_LABELS: Record<string, { label: string; class: string }> = {
   gemeldet: { label: 'Gemeldet', class: 'bg-secondary/20 text-secondary' },
   in_bearbeitung: { label: 'In Bearbeitung', class: 'bg-accent/20 text-accent' },
@@ -64,7 +69,7 @@ export default async function DashboardPage({
 
   const { data: allMeldungen } = await supabase
     .from('wildmeldungen')
-    .select('id, tier_art, tier_tot, address, latitude, longitude, status, created_at, revier_id')
+    .select('id, tier_art, tier_tot, address, latitude, longitude, status, meldungsart, created_at, revier_id')
     .in('revier_id', revierIds.length > 0 ? revierIds : ['none'])
     .order('created_at', { ascending: false })
     .limit(200)
@@ -182,6 +187,7 @@ export default async function DashboardPage({
         <div className="space-y-3">
           {meldungen.map((m) => {
             const statusInfo = STATUS_LABELS[m.status] ?? STATUS_LABELS.gemeldet
+            const meldungsartInfo = MELDUNGSART_LABELS[m.meldungsart ?? 'unfallwild']
             const reviername = reviere?.find((r) => r.id === m.revier_id)?.name
             return (
               <Link key={m.id} href={`/meldungen/${m.id}`} className="block group">
@@ -199,6 +205,9 @@ export default async function DashboardPage({
                             </span>
                           </>
                         )}
+                        <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${meldungsartInfo.class}`}>
+                          {meldungsartInfo.label}
+                        </span>
                         <span className={`text-xs font-medium rounded-full px-2.5 py-0.5 ${statusInfo.class}`}>
                           {statusInfo.label}
                         </span>
