@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { point } from '@turf/helpers'
 import type { GeoJSON } from 'geojson'
@@ -36,8 +37,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ revier: null })
   }
 
-  // Fetch hunter profile
-  const { data: profile } = await supabase
+  // Fetch hunter profile via admin client (bypasses RLS — guest has no session)
+  const admin = createAdminClient()
+  const { data: profile } = await admin
     .from('profiles')
     .select('display_name')
     .eq('id', matched.jaeger_id)
