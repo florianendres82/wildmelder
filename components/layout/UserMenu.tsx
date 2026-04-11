@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,23 +21,33 @@ interface UserData {
 }
 
 export default function UserMenu() {
+  const router = useRouter()
   const [userData, setUserData] = useState<UserData | null | undefined>(undefined)
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { setUserData(null); return }
-      const { data: profile } = await supabase
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session?.user) {
+        setUserData(null)
+        return
+      }
+      const user = session.user
+      supabase
         .from('profiles')
         .select('display_name, role')
         .eq('id', user.id)
         .single()
-      setUserData({
-        displayName: profile?.display_name ?? null,
-        email: user.email ?? null,
-        role: profile?.role ?? null,
-      })
+        .then(({ data: profile }) => {
+          setUserData({
+            displayName: profile?.display_name ?? null,
+            email: user.email ?? null,
+            role: profile?.role ?? null,
+          })
+        })
     })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   // Not yet loaded — render placeholder to avoid layout shift
@@ -90,11 +101,17 @@ export default function UserMenu() {
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/logout" className="flex items-center gap-2 text-destructive">
-            <LogOut className="w-4 h-4" />
-            Abmelden
-          </Link>
+        <DropdownMenuItem
+          className="flex items-center gap-2 text-destructive cursor-pointer"
+          onSelect={async () => {
+            const supabase = createClient()
+            await supabase.auth.signOut()
+            router.push('/')
+            router.refresh()
+          }}
+        >
+          <LogOut className="w-4 h-4" />
+          Abmelden
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
