@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { Map, Phone } from 'lucide-react'
 import DeleteRevierButton from './DeleteRevierButton'
+import TransferRevierButton from './TransferRevierButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,7 +42,8 @@ export default async function AdminRevierePage() {
             const profile = revier.profiles as unknown as { display_name: string } | null
             return (
               <Card key={revier.id} className="border-0 bg-card rounded-2xl">
-                <CardContent className="p-5 flex items-start justify-between gap-4 flex-wrap">
+                <CardContent className="p-5 flex flex-col gap-3">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground mb-0.5">{revier.name}</p>
                     <p className="text-sm text-muted-foreground mb-2">
@@ -64,7 +66,11 @@ export default async function AdminRevierePage() {
                       {new Date(revier.created_at).toLocaleDateString('de-DE')}
                     </p>
                   </div>
-                  <DeleteRevierButton revierId={revier.id} />
+                    <div className="flex items-center gap-2 shrink-0">
+                      <TransferRevierButton revierId={revier.id} revierName={revier.name} />
+                      <DeleteRevierButton revierId={revier.id} />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )

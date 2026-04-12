@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import RevierForm from '@/components/forms/RevierForm'
 import RevierDeleteButton from '@/components/forms/RevierDeleteButton'
+import RevierTransferForm from '@/components/forms/RevierTransferForm'
+import { Card, CardContent } from '@/components/ui/card'
+import { ArrowRightLeft } from 'lucide-react'
 import type { GeoJSON } from 'geojson'
 
 export const metadata: Metadata = {
@@ -23,12 +27,24 @@ export default async function EditRevierPage({
 
   if (!user) redirect('/login')
 
-  const { data: revier } = await supabase
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const isAdmin = profile?.role === 'admin'
+
+  // Admin can edit any revier; Jäger only their own
+  const db = isAdmin ? createAdminClient() : supabase
+  const query = db
     .from('reviere')
     .select('id, name, polygon, phone_numbers, jaeger_id')
     .eq('id', id)
-    .eq('jaeger_id', user.id)
-    .single()
+
+  if (!isAdmin) query.eq('jaeger_id', user.id)
+
+  const { data: revier } = await query.single()
 
   if (!revier) notFound()
 
@@ -49,6 +65,19 @@ export default async function EditRevierPage({
         initialPolygon={revier.polygon as GeoJSON.Polygon}
         initialPhones={revier.phone_numbers ?? []}
       />
+
+      <Card className="border-0 bg-surface-container rounded-2xl mt-8">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">Revier übertragen</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Übertragen Sie dieses Revier an einen anderen Jäger. Sie verlieren danach den Zugriff.
+          </p>
+          <RevierTransferForm revierId={revier.id} />
+        </CardContent>
+      </Card>
     </div>
   )
 }
