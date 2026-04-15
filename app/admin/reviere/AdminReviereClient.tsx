@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Search, X, MapPin, Phone, Loader2 } from 'lucide-react'
+import { Search, X, MapPin, Phone, Loader2, Pencil } from 'lucide-react'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import AllReviereMapClient, { type AllRevierEntry } from '@/components/map/AllReviereMapClient'
 import DeleteRevierButton from './DeleteRevierButton'
 import TransferRevierButton from './TransferRevierButton'
@@ -180,6 +182,11 @@ export default function AdminReviereClient({ reviere }: { reviere: RevierListEnt
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
+                      <Button asChild variant="ghost" size="icon">
+                        <Link href={`/reviere/${revier.id}/edit`}>
+                          <Pencil className="w-4 h-4" />
+                        </Link>
+                      </Button>
                       <TransferRevierButton revierId={revier.id} revierName={revier.name} />
                       <DeleteRevierButton revierId={revier.id} />
                     </div>

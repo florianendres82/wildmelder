@@ -88,6 +88,20 @@ export default function RevierForm({
 
     const filteredPhones = phones.filter((p) => p.trim() !== '')
 
+    if (filteredPhones.length === 0) {
+      setError('Bitte geben Sie mindestens eine Telefonnummer ein.')
+      setLoading(false)
+      return
+    }
+
+    const phoneRegex = /^(\+\d{1,3}|0{1,2})\d[\d\s\-\/]{6,20}$/
+    const invalidPhone = filteredPhones.find((p) => !phoneRegex.test(p.trim()))
+    if (invalidPhone) {
+      setError(`„${invalidPhone}" ist keine gültige Telefonnummer. Bitte im Format +49 … oder 0… eingeben.`)
+      setLoading(false)
+      return
+    }
+
     if (editId) {
       const { error: updateError } = await supabase
         .from('reviere')
@@ -158,7 +172,7 @@ export default function RevierForm({
 
       {/* Phone numbers */}
       <div className="space-y-2">
-        <Label className="text-base font-semibold">Telefonnummern</Label>
+        <Label className="text-base font-semibold">Telefonnummern <span className="text-destructive">*</span></Label>
         <p className="text-sm text-muted-foreground">
           Diese Nummern werden bei Wildunfällen in Ihrem Revier angezeigt.
         </p>
