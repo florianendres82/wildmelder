@@ -13,7 +13,7 @@ interface UserActionsProps {
 }
 
 const ROLES = [
-  { value: null, label: 'Kein' },
+  { value: 'user', label: 'Benutzer' },
   { value: 'jaeger', label: 'Jäger' },
   { value: 'admin', label: 'Admin' },
 ]

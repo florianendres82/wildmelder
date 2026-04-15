@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Phone, Pencil, Map } from 'lucide-react'
+import { Plus, Phone, Pencil, Map, Users } from 'lucide-react'
 import type { GeoJSON } from 'geojson'
 import RevierMapClient from '@/components/map/RevierMapClient'
 
@@ -22,11 +22,22 @@ export default async function RevierePage() {
 
   if (!user) redirect('/login')
 
-  const { data: reviere } = await supabase
-    .from('reviere')
-    .select('id, name, polygon, phone_numbers, created_at')
-    .eq('jaeger_id', user.id)
-    .order('created_at', { ascending: false })
+  const [{ data: reviere }, { data: mitgliedschaften }] = await Promise.all([
+    supabase
+      .from('reviere')
+      .select('id, name, polygon, phone_numbers, created_at')
+      .eq('jaeger_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('revier_mitglieder')
+      .select('revier_id, reviere(id, name, polygon, phone_numbers, created_at)')
+      .eq('jaeger_id', user.id),
+  ])
+
+  type RevierRow = { id: string; name: string; polygon: unknown; phone_numbers: string[]; created_at: string }
+  const geteilteReviere = (mitgliedschaften ?? [])
+    .map((m) => m.reviere as unknown as RevierRow | null)
+    .filter(Boolean) as RevierRow[]
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -34,7 +45,8 @@ export default async function RevierePage() {
         <div>
           <h1 className="font-heading text-3xl font-bold text-foreground">Meine Reviere</h1>
           <p className="text-muted-foreground mt-1">
-            {reviere?.length ?? 0} Revier{(reviere?.length ?? 0) !== 1 ? 'e' : ''} eingetragen
+            {reviere?.length ?? 0} eigene{(reviere?.length ?? 0) !== 1 ? '' : 's'} Revier{(reviere?.length ?? 0) !== 1 ? 'e' : ''}
+            {geteilteReviere.length > 0 && `, ${geteilteReviere.length} geteilt`}
           </p>
         </div>
         <Button asChild>
@@ -62,42 +74,82 @@ export default async function RevierePage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {reviere.map((revier) => (
-            <Card key={revier.id} className="border-0 bg-card rounded-2xl overflow-hidden">
-              <RevierMapClient
-                reviere={[{ polygon: revier.polygon as GeoJSON.Polygon, name: revier.name, id: revier.id }]}
-                className="h-48 w-full"
-                zoom={12}
-              />
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h2 className="font-heading font-semibold text-xl text-foreground">{revier.name}</h2>
-                  <Button asChild variant="ghost" size="icon" className="shrink-0">
-                    <Link href={`/reviere/${revier.id}/edit`}>
-                      <Pencil className="w-4 h-4" />
-                    </Link>
-                  </Button>
-                </div>
-                {revier.phone_numbers?.length > 0 ? (
-                  <div className="space-y-1">
-                    {revier.phone_numbers.map((phone: string, idx: number) => (
-                      <a
-                        key={idx}
-                        href={`tel:${phone}`}
-                        className="flex items-center gap-2 text-sm text-primary hover:underline"
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        {phone}
-                      </a>
-                    ))}
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {reviere.map((revier) => (
+              <Card key={revier.id} className="border-0 bg-card rounded-2xl overflow-hidden">
+                <RevierMapClient
+                  reviere={[{ polygon: revier.polygon as GeoJSON.Polygon, name: revier.name, id: revier.id }]}
+                  className="h-48 w-full"
+                  zoom={12}
+                />
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <h2 className="font-heading font-semibold text-xl text-foreground">{revier.name}</h2>
+                    <Button asChild variant="ghost" size="icon" className="shrink-0">
+                      <Link href={`/reviere/${revier.id}/edit`}>
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                    </Button>
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Keine Telefonnummer hinterlegt</p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  {revier.phone_numbers?.length > 0 ? (
+                    <div className="space-y-1">
+                      {revier.phone_numbers.map((phone: string, idx: number) => (
+                        <a key={idx} href={`tel:${phone}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                          <Phone className="w-3.5 h-3.5" />
+                          {phone}
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Keine Telefonnummer hinterlegt</p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {geteilteReviere.length > 0 && (
+            <div>
+              <h2 className="font-heading text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-muted-foreground" />
+                Geteilte Reviere
+              </h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {geteilteReviere.map((revier) => (
+                  <Card key={revier.id} className="border-0 bg-card rounded-2xl overflow-hidden">
+                    <RevierMapClient
+                      reviere={[{ polygon: revier.polygon as GeoJSON.Polygon, name: revier.name, id: revier.id }]}
+                      className="h-48 w-full"
+                      zoom={12}
+                    />
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <h2 className="font-heading font-semibold text-xl text-foreground">{revier.name}</h2>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                            <Users className="w-3 h-3" /> Mitglied
+                          </span>
+                        </div>
+                      </div>
+                      {revier.phone_numbers?.length > 0 ? (
+                        <div className="space-y-1">
+                          {revier.phone_numbers.map((phone: string, idx: number) => (
+                            <a key={idx} href={`tel:${phone}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                              <Phone className="w-3.5 h-3.5" />
+                              {phone}
+                            </a>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Keine Telefonnummer hinterlegt</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -23,6 +23,10 @@ function isAdminRoute(pathname: string): boolean {
   return pathname.startsWith('/admin')
 }
 
+function isJaegerRoute(pathname: string): boolean {
+  return pathname.startsWith('/dashboard') || pathname.startsWith('/reviere')
+}
+
 function isProtectedRoute(pathname: string): boolean {
   return (
     pathname.startsWith('/dashboard') ||
@@ -74,16 +78,20 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Admin-only guard
-  if (user && isAdminRoute(pathname)) {
+  // Role-based guards (single DB query covers both checks)
+  if (user && (isAdminRoute(pathname) || isJaegerRoute(pathname))) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.sub)
       .single()
 
-    if (profile?.role !== 'admin') {
+    if (isAdminRoute(pathname) && profile?.role !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+
+    if (isJaegerRoute(pathname) && profile?.role === 'user') {
+      return NextResponse.redirect(new URL('/', request.url))
     }
   }
 

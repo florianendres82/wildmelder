@@ -5,8 +5,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import RevierForm from '@/components/forms/RevierForm'
 import RevierDeleteButton from '@/components/forms/RevierDeleteButton'
 import RevierTransferForm from '@/components/forms/RevierTransferForm'
+import RevierMitgliederForm from '@/components/forms/RevierMitgliederForm'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowRightLeft } from 'lucide-react'
+import { ArrowRightLeft, Users } from 'lucide-react'
 import type { GeoJSON } from 'geojson'
 
 export const metadata: Metadata = {
@@ -46,6 +47,12 @@ export default async function EditRevierPage({
 
   const { data: revier } = await query.single()
 
+  const adminDb = createAdminClient()
+  const { data: mitglieder } = await adminDb
+    .from('revier_mitglieder')
+    .select('jaeger_id, profiles(display_name)')
+    .eq('revier_id', id)
+
   if (!revier) notFound()
 
   return (
@@ -65,6 +72,28 @@ export default async function EditRevierPage({
         initialPolygon={revier.polygon as GeoJSON.Polygon}
         initialPhones={revier.phone_numbers ?? []}
       />
+
+      {!isAdmin && (
+        <Card className="border-0 bg-surface-container rounded-2xl mt-8">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              <h2 className="font-semibold text-foreground">Mitglieder</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Laden Sie andere Jäger ein, dieses Revier einzusehen und Meldungen zu empfangen.
+            </p>
+            <RevierMitgliederForm
+              revierId={revier.id}
+              ownerId={revier.jaeger_id}
+              initialMitglieder={(mitglieder ?? []).map((m) => ({
+                id: m.jaeger_id,
+                display_name: (m.profiles as unknown as { display_name: string | null } | null)?.display_name ?? null,
+              }))}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-0 bg-surface-container rounded-2xl mt-8">
         <CardContent className="p-6">

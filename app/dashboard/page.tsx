@@ -60,12 +60,15 @@ export default async function DashboardPage({
     )
   }
 
-  const { data: reviere } = await supabase
-    .from('reviere')
-    .select('id, name')
-    .eq('jaeger_id', user.id)
+  const [{ data: reviere }, { data: mitgliedschaften }] = await Promise.all([
+    supabase.from('reviere').select('id, name').eq('jaeger_id', user.id),
+    supabase.from('revier_mitglieder').select('revier_id').eq('jaeger_id', user.id),
+  ])
 
-  const revierIds = reviere?.map((r) => r.id) ?? []
+  const revierIds = [
+    ...(reviere?.map((r) => r.id) ?? []),
+    ...(mitgliedschaften?.map((m) => m.revier_id) ?? []),
+  ]
 
   const { data: allMeldungen } = await supabase
     .from('wildmeldungen')

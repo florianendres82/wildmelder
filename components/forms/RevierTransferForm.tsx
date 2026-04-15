@@ -10,6 +10,7 @@ interface JaegerResult {
   id: string
   display_name: string | null
   role: string | null
+  email?: string
 }
 
 export default function RevierTransferForm({ revierId }: { revierId: string }) {
@@ -61,7 +62,7 @@ export default function RevierTransferForm({ revierId }: { revierId: string }) {
       <form onSubmit={handleSearch} className="flex gap-2">
         <Input
           type="text"
-          placeholder="Name des Jägers suchen…"
+          placeholder="Name oder E-Mail suchen… (* als Platzhalter)"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value)
@@ -84,14 +85,19 @@ export default function RevierTransferForm({ revierId }: { revierId: string }) {
               key={jaeger.id}
               type="button"
               onClick={() => { setSelected(jaeger); setConfirming(false) }}
-              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-colors flex items-center justify-between ${
+              className={`w-full text-left px-4 py-2.5 rounded-xl text-sm transition-colors flex items-center justify-between gap-3 ${
                 selected?.id === jaeger.id
                   ? 'bg-primary/10 text-primary font-medium'
                   : 'bg-muted hover:bg-muted/80 text-foreground'
               }`}
             >
-              <span>{jaeger.display_name ?? 'Unbekannt'}</span>
-              {selected?.id === jaeger.id && <Check className="w-4 h-4" />}
+              <span className="flex flex-col min-w-0">
+                <span>{jaeger.display_name ?? 'Unbekannt'}</span>
+                {jaeger.email && (
+                  <span className="text-xs text-muted-foreground font-normal truncate">{jaeger.email}</span>
+                )}
+              </span>
+              {selected?.id === jaeger.id && <Check className="w-4 h-4 shrink-0" />}
             </button>
           ))}
         </div>

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Trash2, Loader2, Map } from 'lucide-react'
 import type { GeoJSON } from 'geojson'
+import { checkRevierOverlap } from '@/app/reviere/actions'
 
 const PolygonEditor = dynamic(() => import('@/components/map/PolygonEditor'), {
   ssr: false,
@@ -65,6 +66,15 @@ export default function RevierForm({
     }
 
     setLoading(true)
+
+    const overlapResult = await checkRevierOverlap(polygon, editId)
+    if (overlapResult.conflict) {
+      setError(
+        `Das Revier überschneidet sich zu mehr als 20 % mit „${overlapResult.name}". Bitte passen Sie die Grenzen an.`,
+      )
+      setLoading(false)
+      return
+    }
 
     const supabase = createClient()
     const {
