@@ -58,22 +58,40 @@ export default async function MeldungDetailPage({
     .single()
 
   const isAdmin = profile?.role === 'admin'
+  const admin = createAdminClient()
 
-  // Admins use service-role client (bypasses RLS), Jäger use session client
-  const db = isAdmin ? createAdminClient() : supabase
-
-  const { data: meldung } = await db
+  // Fetch meldung without nested joins to avoid PostgREST join/RLS issues
+  const { data: meldung, error: meldungError } = await admin
     .from('wildmeldungen')
-    .select('*, reviere(name, jaeger_id, phone_numbers, profiles(display_name))')
+    .select('*')
     .eq('id', id)
     .single()
 
-  if (!meldung) notFound()
+  if (meldungError || !meldung) notFound()
 
-  const revier = meldung.reviere as { name: string; jaeger_id: string; phone_numbers: string[]; profiles: { display_name: string } | null } | null
+  // Fetch revier and hunter profile separately
+  const { data: revierData } = meldung.revier_id
+    ? await admin
+        .from('reviere')
+        .select('name, jaeger_id, phone_numbers, profiles(display_name)')
+        .eq('id', meldung.revier_id)
+        .single()
+    : { data: null }
 
-  // Jäger can only see reports in their own reviere
-  if (!isAdmin && revier?.jaeger_id !== user.id) notFound()
+  const revier = revierData as { name: string; jaeger_id: string; phone_numbers: string[]; profiles: { display_name: string } | null } | null
+
+  // Access check: admin sees all, Jäger only own or shared reviere
+  if (!isAdmin) {
+    const isOwner = revier?.jaeger_id === user.id
+    if (!isOwner) {
+      const { count } = await supabase
+        .from('revier_mitglieder')
+        .select('*', { count: 'exact', head: true })
+        .eq('revier_id', meldung.revier_id)
+        .eq('jaeger_id', user.id)
+      if (!count) notFound()
+    }
+  }
 
   const statusInfo = STATUS_LABELS[meldung.status] ?? STATUS_LABELS.gemeldet
   const meldungsartInfo = MELDUNGSART_LABELS[meldung.meldungsart ?? 'unfallwild']
