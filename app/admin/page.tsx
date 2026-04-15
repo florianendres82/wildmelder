@@ -7,7 +7,7 @@ import { Users, Map, AlertTriangle, CheckCircle, List } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Admin-Panel | Wildmelder',
+  title: 'Admin-Panel | Wildunfall-Helfer',
 }
 
 export default async function AdminPage() {

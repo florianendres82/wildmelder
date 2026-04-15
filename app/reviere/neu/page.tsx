@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import RevierForm from '@/components/forms/RevierForm'
 
 export const metadata: Metadata = {
-  title: 'Neues Revier | Wildmelder',
+  title: 'Neues Revier | Wildunfall-Helfer',
 }
 
 export default async function NeuRevierPage() {

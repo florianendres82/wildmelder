@@ -11,7 +11,7 @@ export default function Footer() {
             <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
               <TreePine className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-heading font-bold text-primary-foreground">Wildmelder</span>
+            <span className="font-heading font-bold text-primary-foreground">Wildunfall-Helfer</span>
           </div>
 
           {/* Emergency */}
@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-primary-foreground/20 text-xs text-primary-foreground/50 text-center">
-          © {new Date().getFullYear()} Wildmelder — Schnelle Hilfe bei Wildunfällen
+          © {new Date().getFullYear()} Wildunfall-Helfer — Schnelle Hilfe bei Wildunfällen
         </div>
       </div>
     </footer>

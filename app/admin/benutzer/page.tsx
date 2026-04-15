@@ -7,7 +7,7 @@ import JaegerSelectionList from './JaegerSelectionList'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Benutzerverwaltung | Admin | Wildmelder',
+  title: 'Benutzerverwaltung | Admin | Wildunfall-Helfer',
 }
 
 

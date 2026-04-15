@@ -11,7 +11,7 @@ import { ArrowRightLeft, Users } from 'lucide-react'
 import type { GeoJSON } from 'geojson'
 
 export const metadata: Metadata = {
-  title: 'Revier bearbeiten | Wildmelder',
+  title: 'Revier bearbeiten | Wildunfall-Helfer',
 }
 
 export default async function EditRevierPage({

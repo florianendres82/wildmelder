@@ -1,7 +1,8 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
-import { TreePine, AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import UserMenuClient from './UserMenuClient'
 import MobileMenuClient from './MobileMenuClient'
 
@@ -36,11 +37,9 @@ export default async function Header() {
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <TreePine className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <Image src="/logo.png" alt="Wildunfall-Helfer Logo" width={32} height={42} className="w-8 h-10 object-contain" />
             <span className="font-heading font-bold text-lg text-foreground hidden sm:block">
-              Wildmelder
+              Wildunfall-Helfer
             </span>
           </Link>
 

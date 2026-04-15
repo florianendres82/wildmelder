@@ -13,7 +13,7 @@ import CopyIdButton from '@/components/ui/CopyIdButton'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Meldungsübersicht | Admin | Wildmelder',
+  title: 'Meldungsübersicht | Admin | Wildunfall-Helfer',
 }
 
 const MELDUNGSART_LABELS: Record<string, { label: string; class: string }> = {
@@ -79,13 +79,6 @@ export default async function AdminMeldungenPage({
     .filter((m) => m.latitude && m.longitude)
     .map((m) => ({ lat: m.latitude as number, lng: m.longitude as number }))
 
-  // Count by animal type
-  const tierCounts: Record<string, number> = {}
-  for (const m of meldungen ?? []) {
-    const art = m.tier_art ?? 'Unbekannt'
-    tierCounts[art] = (tierCounts[art] ?? 0) + 1
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       <div className="mb-8">
@@ -132,30 +125,6 @@ export default async function AdminMeldungenPage({
         )}
       </div>
 
-      {/* Wildart distribution */}
-      {Object.keys(tierCounts).length > 0 && (
-        <div className="mb-8">
-          <h2 className="font-heading font-semibold text-lg text-foreground mb-3">Verteilung nach Wildart</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {Object.entries(tierCounts)
-              .sort(([, a], [, b]) => b - a)
-              .map(([art, count]) => (
-                <Card key={art} className="border-0 bg-surface-container rounded-2xl">
-                  <CardContent className="p-4">
-                    <p className="text-xl font-heading font-bold text-foreground">{count}</p>
-                    <p className="text-sm text-muted-foreground">{art}</p>
-                    <div className="mt-2 h-1.5 rounded-full bg-border overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full"
-                        style={{ width: `${Math.round((count / total) * 100)}%` }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-          </div>
-        </div>
-      )}
 
       {/* Meldungen list */}
       <div>

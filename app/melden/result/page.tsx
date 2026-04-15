@@ -17,7 +17,7 @@ import {
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Meldung erfolgreich | Wildmelder',
+  title: 'Meldung erfolgreich | Wildunfall-Helfer',
 }
 
 async function getNearbyPolice(lat: number, lng: number): Promise<{ name: string; phone?: string } | null> {
@@ -50,24 +50,23 @@ export default async function ResultPage({
 
   const supabase = createAdminClient()
 
-  const { data: meldung } = await supabase
+  const { data: meldung, error: meldungError } = await supabase
     .from('wildmeldungen')
-    .select(
-      `
-      id, latitude, longitude, address, tier_art, tier_tot, status, created_at,
-      revier_id,
-      reviere (
-        id, name, phone_numbers,
-        profiles ( display_name )
-      )
-    `
-    )
+    .select('id, latitude, longitude, address, tier_art, tier_tot, status, created_at, revier_id')
     .eq('id', id)
     .single()
 
-  if (!meldung) notFound()
+  if (meldungError || !meldung) notFound()
 
-  const revier = meldung.reviere as unknown as {
+  const { data: revierData } = meldung.revier_id
+    ? await supabase
+        .from('reviere')
+        .select('id, name, phone_numbers, profiles(display_name)')
+        .eq('id', meldung.revier_id)
+        .single()
+    : { data: null }
+
+  const revier = revierData as {
     id: string
     name: string
     phone_numbers: string[]

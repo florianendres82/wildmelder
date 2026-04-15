@@ -6,13 +6,14 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MapPin, AlertTriangle, CheckCircle, Clock, Plus, ArrowRight } from 'lucide-react'
-import DashboardSearch from '@/components/forms/DashboardSearch'
 import CopyIdButton from '@/components/ui/CopyIdButton'
+import MeldungHeatmapClient from '@/components/map/MeldungHeatmapClient'
+import MeldungenFilter from '@/app/admin/meldungen/MeldungenFilter'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Dashboard | Wildmelder',
+  title: 'Dashboard | Wildunfall-Helfer',
 }
 
 const MELDUNGSART_LABELS: Record<string, { label: string; class: string }> = {
@@ -29,9 +30,9 @@ const STATUS_LABELS: Record<string, { label: string; class: string }> = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; tier?: string; tage?: string; meldungsart?: string }>
 }) {
-  const { q } = await searchParams
+  const { q, tier, tage, meldungsart } = await searchParams
   const supabase = await createClient()
 
   const {
@@ -70,14 +71,24 @@ export default async function DashboardPage({
     ...(mitgliedschaften?.map((m) => m.revier_id) ?? []),
   ]
 
-  const { data: allMeldungen } = await supabase
+  let meldungenQuery = supabase
     .from('wildmeldungen')
     .select('id, tier_art, tier_tot, address, latitude, longitude, status, meldungsart, created_at, revier_id')
     .in('revier_id', revierIds.length > 0 ? revierIds : ['none'])
     .order('created_at', { ascending: false })
     .limit(200)
 
-  // Apply search filter
+  if (tier) meldungenQuery = meldungenQuery.eq('tier_art', tier)
+  if (meldungsart) meldungenQuery = meldungenQuery.eq('meldungsart', meldungsart)
+  if (tage) {
+    const since = new Date()
+    since.setDate(since.getDate() - parseInt(tage))
+    meldungenQuery = meldungenQuery.gte('created_at', since.toISOString())
+  }
+
+  const { data: allMeldungen } = await meldungenQuery
+
+  // Text search filter (client-side)
   const meldungen = q
     ? allMeldungen?.filter((m) => {
         const term = q.toLowerCase()
@@ -88,6 +99,10 @@ export default async function DashboardPage({
         )
       })
     : allMeldungen
+
+  const heatPoints = (allMeldungen ?? [])
+    .filter((m) => m.latitude && m.longitude)
+    .map((m) => ({ lat: m.latitude as number, lng: m.longitude as number }))
 
   const total = allMeldungen?.length ?? 0
   const open = allMeldungen?.filter((m) => m.status === 'gemeldet').length ?? 0
@@ -133,6 +148,14 @@ export default async function DashboardPage({
         ))}
       </div>
 
+      {/* Heatmap */}
+      {heatPoints.length > 0 && (
+        <div className="mb-8">
+          <h2 className="font-heading font-semibold text-lg text-foreground mb-3">Heatmap</h2>
+          <MeldungHeatmapClient points={heatPoints} />
+        </div>
+      )}
+
       {/* Reviere quick links */}
       {reviere && reviere.length > 0 && (
         <div className="mb-8">
@@ -159,12 +182,14 @@ export default async function DashboardPage({
       )}
 
       {/* Reports list */}
-      <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-        <h2 className="font-heading font-semibold text-lg text-foreground">
-          Aktuelle Meldungen{q && meldungen ? ` (${meldungen.length} Treffer)` : ''}
-        </h2>
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-3 gap-4 flex-wrap">
+          <h2 className="font-heading font-semibold text-lg text-foreground">
+            Meldungen{meldungen && (tier || tage || meldungsart || q) ? ` (${meldungen.length})` : ''}
+          </h2>
+        </div>
         <Suspense>
-          <DashboardSearch />
+          <MeldungenFilter />
         </Suspense>
       </div>
 

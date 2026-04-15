@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -20,6 +21,16 @@ export default function HomePage() {
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-96 h-96 bg-accent rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-container rounded-full blur-3xl -translate-x-1/2 translate-y-1/2" />
+        </div>
+        <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-8 lg:pr-16 pointer-events-none select-none">
+          <Image
+            src="/logo.png"
+            alt=""
+            width={442}
+            height={584}
+            className="w-48 sm:w-64 lg:w-80 h-auto opacity-10"
+            priority
+          />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
           <div className="max-w-2xl">

@@ -17,9 +17,13 @@ const publicSans = Public_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Wildmelder — Wildunfall-Notruf-Assistent",
+  title: "Wildunfall-Helfer — Wildunfall-Notruf-Assistent",
   description:
     "Wildunfall? Jetzt Jäger und Polizei schnell und einfach benachrichtigen. GPS-Standort, Schritt-für-Schritt-Anleitung und Dokumentation.",
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function RootLayout({

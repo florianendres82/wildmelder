@@ -43,7 +43,7 @@ export default function MeldungPDFButton({ data }: { data: MeldungPDFData }) {
       doc.text('Wildunfall-Bescheinigung', margin, 16)
       doc.setFontSize(10)
       doc.setFont('helvetica', 'normal')
-      doc.text('Wildmelder — Automatisch erstellt', margin, 24)
+      doc.text('Wildunfall-Helfer — Automatisch erstellt', margin, 24)
       doc.text(`Meldungs-ID: ${data.id.slice(0, 8).toUpperCase()}`, margin, 30)
 
       y = 45
@@ -122,7 +122,7 @@ export default function MeldungPDFButton({ data }: { data: MeldungPDFData }) {
       doc.setFontSize(8)
       doc.setTextColor(150)
       doc.text(
-        'Dieses Dokument wurde automatisch von Wildmelder erstellt. Bitte für Versicherungs- und Polizeizwecke aufbewahren.',
+        'Dieses Dokument wurde automatisch von Wildunfall-Helfer erstellt. Bitte für Versicherungs- und Polizeizwecke aufbewahren.',
         margin,
         285,
         { maxWidth: contentWidth }

@@ -11,7 +11,7 @@ import type { GeoJSON } from 'geojson'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Revier | Wildmelder',
+  title: 'Revier | Wildunfall-Helfer',
 }
 
 const STATUS_LABELS: Record<string, { label: string; class: string }> = {

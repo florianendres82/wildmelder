@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Sofortanleitung — Was tun nach einem Wildunfall? | Wildmelder',
+  title: 'Sofortanleitung — Was tun nach einem Wildunfall? | Wildunfall-Helfer',
   description:
     'Schritt-für-Schritt-Anleitung: Was müssen Sie nach einem Wildunfall tun? Rechtliche Pflichten, Sicherheit, Dokumentation. Auch offline verfügbar.',
 }
@@ -50,7 +50,7 @@ const steps = [
     icon: Phone,
     title: 'Polizei und Jäger benachrichtigen',
     description:
-      'Rufen Sie sofort die Polizei (110) an — das ist gesetzlich vorgeschrieben (§ 34 StVO). Verwenden Sie Wildmelder, um den zuständigen Jäger automatisch zu finden und zu kontaktieren. Teilen Sie Ihren genauen Standort mit.',
+      'Rufen Sie sofort die Polizei (110) an — das ist gesetzlich vorgeschrieben (§ 34 StVO). Verwenden Sie Wildunfall-Helfer, um den zuständigen Jäger automatisch zu finden und zu kontaktieren. Teilen Sie Ihren genauen Standort mit.',
     warning: false,
     callout: '110',
     calloutLabel: 'Polizei anrufen',
@@ -172,7 +172,7 @@ export default function SofortanleitungPage() {
           Jetzt Wildunfall melden
         </h2>
         <p className="text-muted-foreground mb-6">
-          Nutzen Sie Wildmelder, um den zuständigen Jäger automatisch zu finden.
+          Nutzen Sie Wildunfall-Helfer, um den zuständigen Jäger automatisch zu finden.
         </p>
         <Button asChild size="lg" className="h-14 px-8 text-base font-semibold">
           <Link href="/melden">

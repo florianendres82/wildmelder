@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Wildmelder — Wildunfall-Notruf-Assistent',
-    short_name: 'Wildmelder',
+    name: 'Wildunfall-Helfer — Wildunfall-Notruf-Assistent',
+    short_name: 'Wildunfall-Helfer',
     description: 'Schnelle Hilfe bei Wildunfällen — Jäger sofort finden',
     start_url: '/',
     display: 'standalone',

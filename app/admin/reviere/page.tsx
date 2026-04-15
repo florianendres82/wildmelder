@@ -8,7 +8,7 @@ import TransferRevierButton from './TransferRevierButton'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Revierverwaltung | Admin | Wildmelder',
+  title: 'Revierverwaltung | Admin | Wildunfall-Helfer',
 }
 
 export default async function AdminRevierePage() {

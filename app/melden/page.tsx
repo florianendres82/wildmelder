@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import MeldungStepper from '@/components/forms/MeldungStepper'
 
 export const metadata: Metadata = {
-  title: 'Wildunfall melden | Wildmelder',
+  title: 'Wildunfall melden | Wildunfall-Helfer',
   description: 'Wildunfall melden — Standort bestimmen, Tier auswählen, Jäger finden.',
 }
 

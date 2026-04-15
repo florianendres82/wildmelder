@@ -13,7 +13,7 @@ import CopyIdButton from '@/components/ui/CopyIdButton'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Meldung | Wildmelder',
+  title: 'Meldung | Wildunfall-Helfer',
 }
 
 const MELDUNGSART_LABELS: Record<string, { label: string; class: string }> = {

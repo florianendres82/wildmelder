@@ -11,7 +11,7 @@ import RevierMapClient from '@/components/map/RevierMapClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Meine Reviere | Wildmelder',
+  title: 'Meine Reviere | Wildunfall-Helfer',
 }
 
 export default async function RevierePage() {

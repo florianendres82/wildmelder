@@ -119,13 +119,13 @@ export async function inviteJaeger(revierId: string, jaegerId: string) {
     const inviterName = inviterProfile?.display_name ?? 'Ein Jäger'
 
     await resend.emails.send({
-      from: process.env.RESEND_FROM ?? 'Wildmelder <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM ?? 'Wildunfall-Helfer <onboarding@resend.dev>',
       to: inviteeEmail,
       subject: `Einladung zum Revier „${revier.name}"`,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#071E27">
           <div style="background:#154212;padding:24px 32px;border-radius:12px 12px 0 0">
-            <h1 style="margin:0;color:#fff;font-size:22px">Wildmelder</h1>
+            <h1 style="margin:0;color:#fff;font-size:22px">Wildunfall-Helfer</h1>
           </div>
           <div style="background:#fff;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e2eaf0;border-top:none">
             <p style="margin:0 0 16px">Hallo,</p>
@@ -141,7 +141,7 @@ export async function inviteJaeger(revierId: string, jaegerId: string) {
               Meine Reviere ansehen →
             </a>
             <p style="margin:32px 0 0;font-size:13px;color:#6b8a99">
-              Mit freundlichen Grüßen<br>Das Wildmelder-Team
+              Mit freundlichen Grüßen<br>Das Wildunfall-Helfer-Team
             </p>
           </div>
         </div>
