@@ -9,13 +9,24 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MapPin, Navigation, Search, Loader2, Map, Satellite } from 'lucide-react'
 
-// Fix Leaflet icons
+// Fix Leaflet default icons (used elsewhere)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: '/leaflet/marker-icon-2x.png',
   iconUrl: '/leaflet/marker-icon.png',
   shadowUrl: '/leaflet/marker-shadow.png',
+})
+
+const pinIcon = L.divIcon({
+  className: '',
+  html: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" fill="none">
+    <path d="M16 0C7.163 0 0 7.163 0 16c0 10.293 14.25 24.48 15.156 25.406a1.18 1.18 0 0 0 1.688 0C17.75 40.48 32 26.293 32 16 32 7.163 24.837 0 16 0Z" fill="#fd8b00"/>
+    <circle cx="16" cy="16" r="7" fill="white"/>
+  </svg>`,
+  iconSize: [32, 42],
+  iconAnchor: [16, 42],
+  popupAnchor: [0, -42],
 })
 
 interface LocationPickerProps {
@@ -160,7 +171,14 @@ export default function LocationPicker({
       </form>
 
       {/* Map */}
-      <div className="rounded-xl overflow-hidden border border-border relative aspect-[3/2] w-full [&_.leaflet-container]:cursor-crosshair">
+      <div
+        className="rounded-xl overflow-hidden border border-border relative aspect-[3/2] w-full"
+        style={{
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ['--pin-cursor' as any]: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='36' viewBox='0 0 28 36'%3E%3Cpath d='M14 0C6.268 0 0 6.268 0 14c0 8.96 12.469 21.07 13.258 21.88a1.03 1.03 0 0 0 1.484 0C15.531 35.07 28 22.96 28 14 28 6.268 21.732 0 14 0Z' fill='%23fd8b00'/%3E%3Ccircle cx='14' cy='14' r='6' fill='white'/%3E%3Ccircle cx='14' cy='14' r='3' fill='%23fd8b00'/%3E%3C/svg%3E") 14 36, crosshair`,
+        }}
+      >
+        <style>{`.leaflet-container { cursor: var(--pin-cursor) !important; }`}</style>
         <MapContainer
           center={defaultCenter}
           zoom={position ? 15 : 6}
@@ -180,7 +198,7 @@ export default function LocationPicker({
             />
           )}
           <MapClickHandler onMapClick={updatePosition} />
-          {position && <Marker position={position} />}
+          {position && <Marker position={position} icon={pinIcon} />}
           <ZoomDisplay />
         </MapContainer>
         {/* Layer toggle — absolute over the map */}
