@@ -4,12 +4,13 @@ import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { updateMeldungDoku } from '@/app/melden/actions'
 import { Button } from '@/components/ui/button'
 import TierStep from './TierStep'
 import PhotoStep from './PhotoStep'
 import JaegerStep from './JaegerStep'
 import { cn } from '@/lib/utils'
-import { MapPin, TreePine, FileText, Loader2, ChevronRight, ChevronLeft, SkipForward } from 'lucide-react'
+import { MapPin, TreePine, FileText, Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
 
 const LocationPicker = dynamic(
   () => import('@/components/map/LocationPicker'),
@@ -55,6 +56,7 @@ export default function MeldungStepper() {
   const [lookupLoading, setLookupLoading] = useState(false)
   const [error, setError] = useState('')
   const [matchedRevier, setMatchedRevier] = useState<MatchedRevier | null | undefined>(undefined)
+  const [meldungId, setMeldungId] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<MeldungFormData>({
     latitude: null,
@@ -72,7 +74,10 @@ export default function MeldungStepper() {
     if (!formData.latitude || !formData.longitude) return
     setLookupLoading(true)
     setStep(1)
+    setError('')
+
     try {
+      // 1. Match revier
       const res = await fetch('/api/match-revier', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,6 +85,22 @@ export default function MeldungStepper() {
       })
       const { revier } = await res.json()
       setMatchedRevier(revier ?? null)
+
+      // 2. Sofort speichern (anon INSERT erlaubt via RLS)
+      const supabase = createClient()
+      const newId = crypto.randomUUID()
+      const { error: insertError } = await supabase.from('wildmeldungen').insert({
+        id: newId,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        address: formData.address || null,
+        revier_id: revier?.id ?? null,
+        meldungsart: 'unfallwild',
+      })
+
+      if (!insertError) {
+        setMeldungId(newId)
+      }
     } catch {
       setMatchedRevier(null)
     } finally {
@@ -87,7 +108,7 @@ export default function MeldungStepper() {
     }
   }
 
-  async function handleSubmit(skipDoku = false) {
+  async function handleSubmit() {
     if (!formData.latitude || !formData.longitude) return
     setSubmitting(true)
     setError('')
@@ -97,41 +118,48 @@ export default function MeldungStepper() {
 
       // Upload photos
       const photoUrls: string[] = []
-      if (!skipDoku) {
-        for (const file of formData.photoFiles) {
-          const ext = file.name.split('.').pop() ?? 'jpg'
-          const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-          const { data, error: uploadError } = await supabase.storage
+      for (const file of formData.photoFiles) {
+        const ext = file.name.split('.').pop() ?? 'jpg'
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { data, error: uploadError } = await supabase.storage
+          .from('wildmeldung-photos')
+          .upload(path, file)
+        if (!uploadError && data) {
+          const { data: urlData } = supabase.storage
             .from('wildmeldung-photos')
-            .upload(path, file)
-          if (!uploadError && data) {
-            const { data: urlData } = supabase.storage
-              .from('wildmeldung-photos')
-              .getPublicUrl(data.path)
-            photoUrls.push(urlData.publicUrl)
-          }
+            .getPublicUrl(data.path)
+          photoUrls.push(urlData.publicUrl)
         }
       }
 
-      const meldungId = crypto.randomUUID()
-      const { error: insertError } = await supabase.from('wildmeldungen').insert({
-        id: meldungId,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
-        address: formData.address,
-        tier_art: skipDoku ? null : (formData.tierArt || null),
-        tier_tot: skipDoku ? null : formData.tierTot,
-        revier_id: matchedRevier?.id ?? null,
-        notes: skipDoku ? null : (formData.notes || null),
+      const dokuData = {
+        tier_art: formData.tierArt || null,
+        tier_tot: formData.tierTot,
+        notes: formData.notes || null,
         photo_urls: photoUrls,
-        reporter_name: skipDoku ? null : (formData.reporterName || null),
-        reporter_phone: skipDoku ? null : (formData.reporterPhone || null),
-        meldungsart: 'unfallwild',
-      })
+        reporter_name: formData.reporterName || null,
+        reporter_phone: formData.reporterPhone || null,
+      }
 
-      if (insertError) throw insertError
-
-      router.push(`/melden/result?id=${meldungId}`)
+      if (meldungId) {
+        // Meldung wurde bereits in Schritt 1 gespeichert → nur ergänzen
+        await updateMeldungDoku(meldungId, dokuData)
+        router.push(`/melden/result?id=${meldungId}`)
+      } else {
+        // Fallback: kompletter INSERT (z. B. wenn Schritt-1-Insert fehlschlug)
+        const newId = crypto.randomUUID()
+        const { error: insertError } = await supabase.from('wildmeldungen').insert({
+          id: newId,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          address: formData.address || null,
+          revier_id: matchedRevier?.id ?? null,
+          meldungsart: 'unfallwild',
+          ...dokuData,
+        })
+        if (insertError) throw insertError
+        router.push(`/melden/result?id=${newId}`)
+      }
     } catch (err) {
       console.error(err)
       setError('Fehler beim Speichern der Meldung. Bitte versuchen Sie es erneut.')
@@ -214,7 +242,7 @@ export default function MeldungStepper() {
               Unfall dokumentieren
             </h2>
             <p className="text-muted-foreground mb-6">
-              Optional — für Versicherung und Polizei. Sie können diesen Schritt auch überspringen.
+              Helfen Sie bei der Dokumentation für Versicherung und Polizei.
             </p>
             <div className="space-y-8">
               <TierStep
@@ -278,33 +306,21 @@ export default function MeldungStepper() {
             className="flex-1 h-14 text-base font-semibold"
             disabled={lookupLoading}
           >
-            Unfall dokumentieren
+            Weiter
             <ChevronRight className="w-5 h-5 ml-1" />
           </Button>
         )}
 
         {step === 2 && (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleSubmit(true)}
-              className="h-14 px-4 text-muted-foreground"
-              disabled={submitting}
-            >
-              <SkipForward className="w-4 h-4 mr-1.5" />
-              Überspringen
-            </Button>
-            <Button
-              type="button"
-              onClick={() => handleSubmit(false)}
-              className="flex-1 h-14 text-base font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
-              disabled={submitting}
-            >
-              {submitting && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
-              {submitting ? 'Wird gespeichert…' : 'Meldung mit Dokumentation speichern'}
-            </Button>
-          </>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            className="flex-1 h-14 text-base font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
+            disabled={submitting}
+          >
+            {submitting && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
+            {submitting ? 'Wird gespeichert…' : 'Meldung abschließen'}
+          </Button>
         )}
       </div>
     </div>
