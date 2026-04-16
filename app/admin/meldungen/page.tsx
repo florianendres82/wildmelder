@@ -178,7 +178,7 @@ export default async function AdminMeldungenPage({
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <p className="text-xs text-muted-foreground">
-                        {new Date(m.created_at).toLocaleString('de-DE')}
+                        {new Date(m.created_at).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
                       </p>
                       <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>

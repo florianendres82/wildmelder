@@ -72,7 +72,7 @@ export default function MeldungPDFButton({ data }: { data: MeldungPDFData }) {
 
       // Zeitpunkt
       section('Meldung')
-      row('Datum / Uhrzeit', new Date(data.createdAt).toLocaleString('de-DE'))
+      row('Datum / Uhrzeit', new Date(data.createdAt).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }))
 
       y += 3
       section('Unfallort')

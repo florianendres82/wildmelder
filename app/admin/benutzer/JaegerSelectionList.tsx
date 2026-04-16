@@ -143,7 +143,7 @@ export default function JaegerSelectionList({ users }: { users: User[] }) {
                   </div>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                   <p className="text-xs text-muted-foreground">
-                    Registriert: {new Date(user.created_at).toLocaleDateString('de-DE')}
+                    Registriert: {new Date(user.created_at).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' })}
                   </p>
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>

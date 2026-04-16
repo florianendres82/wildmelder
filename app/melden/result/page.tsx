@@ -117,7 +117,7 @@ export default async function ResultPage({
             <div>
               <p className="text-xs text-muted-foreground">Gemeldet um</p>
               <p className="text-sm text-foreground">
-                {new Date(meldung.created_at).toLocaleString('de-DE')}
+                {new Date(meldung.created_at).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
               </p>
             </div>
           </div>

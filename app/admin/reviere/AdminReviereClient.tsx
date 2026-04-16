@@ -178,7 +178,7 @@ export default function AdminReviereClient({ reviere }: { reviere: RevierListEnt
                         </div>
                       )}
                       <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(revier.created_at).toLocaleDateString('de-DE')}
+                        {new Date(revier.created_at).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' })}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

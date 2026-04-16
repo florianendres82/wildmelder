@@ -222,7 +222,7 @@ export default async function MeldungDetailPage({
         {/* Timestamp */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
           <Calendar className="w-3.5 h-3.5" />
-          Gemeldet am {new Date(meldung.created_at).toLocaleString('de-DE')}
+          Gemeldet am {new Date(meldung.created_at).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}
         </div>
 
         {/* Actions */}
