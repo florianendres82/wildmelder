@@ -69,20 +69,31 @@ export default async function MeldungDetailPage({
 
   if (meldungError || !meldung) notFound()
 
-  // Fetch revier and hunter profile separately
-  const { data: revierData } = meldung.revier_id
+  // Fetch revier without join to avoid PostgREST join issues causing null result
+  const { data: revierRaw } = meldung.revier_id
     ? await admin
         .from('reviere')
-        .select('name, jaeger_id, phone_numbers, profiles(display_name)')
+        .select('name, jaeger_id, phone_numbers')
         .eq('id', meldung.revier_id)
         .single()
     : { data: null }
 
-  const revier = revierData as { name: string; jaeger_id: string; phone_numbers: string[]; profiles: { display_name: string } | null } | null
+  // Fetch hunter profile separately
+  const { data: hunterProfile } = revierRaw?.jaeger_id
+    ? await admin
+        .from('profiles')
+        .select('display_name')
+        .eq('id', revierRaw.jaeger_id)
+        .single()
+    : { data: null }
+
+  const revier = revierRaw
+    ? { ...revierRaw, profiles: hunterProfile }
+    : null
 
   // Access check: admin sees all, Jäger only own or shared reviere
   if (!isAdmin) {
-    const isOwner = revier?.jaeger_id === user.id
+    const isOwner = revierRaw?.jaeger_id === user.id
     if (!isOwner) {
       const { count } = await supabase
         .from('revier_mitglieder')
